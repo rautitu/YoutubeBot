@@ -67,7 +67,7 @@ async def remove(ctx: commands.Context, index: int):
 
     # Validate the index
     if index < 1 or index > len(queue):
-        await ctx.send(f'Invalid index. Please choose a number between 1 and {len(queue)}.')
+        await ctx.send(f'Invalid index. Please choose a number between 1 and {len(queue)} which is the current lenght of queue.')
         return
 
     # Remove the item from the queue
@@ -79,15 +79,15 @@ async def remove(ctx: commands.Context, index: int):
     if len(queue) == 0:
         await ctx.send('The queue is now empty.')
     else:
-        title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
-        queue_str = ''.join(map(title_str, enumerate([i[1]["title"] for i in queue])))
-        embedVar = discord.Embed(color=COLOR)
-        embedVar.add_field(name='Updated Queue:', value=queue_str)
-        await ctx.send(embed=embedVar)
-
+        #title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
+        #queue_str = ''.join(map(title_str, enumerate([i[1]["title"] for i in queue])))
+        #embedVar = discord.Embed(color=COLOR)
+        #embedVar.add_field(name='Updated Queue:', value=queue_str)
+        #await ctx.send(embed=embedVar)
+        queues[ctx.guild.id]['queue'].pop(index - 1)
     # Perform any necessary sense checks
-    if not await sense_checks(ctx):
-        return
+    #if not await sense_checks(ctx):
+        #return
 
 
 @bot.command(name='skip', aliases=['s'])
