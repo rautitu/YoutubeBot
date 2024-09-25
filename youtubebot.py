@@ -52,6 +52,43 @@ async def queue(ctx: commands.Context, *args):
         await ctx.send(embed=embedVar)
     if not await sense_checks(ctx):
         return
+    
+@bot.command(name='remove', aliases=['r'])
+async def remove(ctx: commands.Context, index: int):
+    try: 
+        queue = queues[ctx.guild.id]['queue']
+    except KeyError: 
+        queue = None
+    
+    # If there's no queue, inform the user
+    if queue is None or len(queue) == 0:
+        await ctx.send('The bot isn\'t playing anything, so there is nothing to remove.')
+        return
+
+    # Validate the index
+    if index < 1 or index > len(queue):
+        await ctx.send(f'Invalid index. Please choose a number between 1 and {len(queue)}.')
+        return
+
+    # Remove the item from the queue
+    removed_item = queue.pop(index - 1)  # Remove by zero-based index
+
+    await ctx.send(f'Removed: **{removed_item["title"]}** from the queue.')
+
+    # If you want to update the now playing status or the queue display:
+    if len(queue) == 0:
+        await ctx.send('The queue is now empty.')
+    else:
+        title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
+        queue_str = ''.join(map(title_str, enumerate([i[1]["title"] for i in queue])))
+        embedVar = discord.Embed(color=COLOR)
+        embedVar.add_field(name='Updated Queue:', value=queue_str)
+        await ctx.send(embed=embedVar)
+
+    # Perform any necessary sense checks
+    if not await sense_checks(ctx):
+        return
+
 
 @bot.command(name='skip', aliases=['s'])
 async def skip(ctx: commands.Context, *args):
