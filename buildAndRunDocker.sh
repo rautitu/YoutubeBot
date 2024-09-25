@@ -1,8 +1,16 @@
 #!/bin/bash
 
 # Define variables
-IMAGE_NAME="youtubebot"
-CONTAINER_NAME="youtubebot-container"
+#IMAGE_NAME="youtubebot"
+#CONTAINER_NAME="youtubebot-container"
+# Load variables from .env file
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+else
+    echo ".env file not found!"
+    exit 1
+fi
+
 
 # Step 1: Build the Docker image
 echo "Building Docker image..."
