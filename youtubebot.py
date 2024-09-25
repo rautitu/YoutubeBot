@@ -87,6 +87,8 @@ async def remove(ctx: commands.Context, index: int):
         await ctx.send(embed=embedVar)
     else:
         await ctx.send('The queue is now empty.')
+        voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
+        voice_client.stop()
 
     # Run any checks needed after the command
     if not await sense_checks(ctx):
