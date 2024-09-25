@@ -1,0 +1,19 @@
+Tässä chatgpt ohje miten ajoon:
+    https://chatgpt.com/share/66f3cb2a-2e84-8001-ac3f-27cb5232e688
+
+navigoi sine oikeaan directoryy
+
+eka buildaa app:
+    sudo docker build -t youtubebot .
+
+ajetaan background modessa :youtubebot-container nimellä:
+    sudo docker run -d --name youtubebot-container youtubebot
+
+kato onko ajossa:
+    sudo docker ps
+
+stop:
+    sudo docker stop youtubebot
+
+logit, näähän sais tallennettua johkin jollain muulla komennolla mutta printtaa terminaaliin nykyset outputit tällä:
+    sudo docker logs youtubebot-container
