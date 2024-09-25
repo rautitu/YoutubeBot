@@ -66,36 +66,36 @@ async def remove(ctx: commands.Context, index: int):
         await ctx.send('The bot isn\'t playing anything, so there is nothing to remove.')
         return
 
-    # Validate the index provided by the user (1-based for users, 0-based for code)
-    if index < 1 or index > queue_length:
-        await ctx.send(f'Invalid index. Please choose a number between 1 and {queue_length}.')
+    if not await sense_checks(ctx):
         return
 
-    # Remove the item at the given index (adjusting for 0-based indexing)
-    removed_item = queues[ctx.guild.id]['queue'].pop(index - 1)
+    # Validate the index provided by the user 
+    if index < 0 or index >= queue_length or not isinstance(index, int):
+        await ctx.send(f'Invalid index. Please choose a number between 0 (currently playing song) and {queue_length - 1} (current queue length).')
+        return
+
+    # If the remove targets currently playing song (index = 0), remove the first item and stop the voice client
+    if index == 0:
+        # Remove the currently playing song
+        #removed_item = queue.pop(0)
+        removed_item = queues[ctx.guild.id]['queue'].pop(0)
+        # Stop the current track, triggering the next song to play
+        voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
+        voice_client.stop()
+    else:
+        # Remove the item at the given index (adjusting for 0-based indexing)
+        #removed_item = queue.pop(index)
+        removed_item = queues[ctx.guild.id]['queue'].pop(index)
 
     # Extract the title from the second element (info dictionary) of the tuple
     removed_title = removed_item[1].get("title", "Unknown Title")
     await ctx.send(f'Removed: **{removed_title}** from the queue.')
 
     # If there are still items in the queue, show the updated queue
-    if len(queues[ctx.guild.id]['queue']) > 0:
-        title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
-        queue_str = ''.join(map(title_str, enumerate([i[1].get("title", "Unknown Title") for i in queues[ctx.guild.id]['queue']])))
-        embedVar = discord.Embed(color=COLOR)
-        embedVar.add_field(name='Updated Queue:', value=queue_str)
-        await ctx.send(embed=embedVar)
+    if queues[ctx.guild.id]['queue']:
+        await ctx.send(f"Queue length after removal: {len(queues[ctx.guild.id]['queue'])}")
     else:
         await ctx.send('The queue is now empty.')
-        voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
-        voice_client.stop()
-
-    # Run any checks needed after the command
-    if not await sense_checks(ctx):
-        return
-
-
-
 
 
 @bot.command(name='skip', aliases=['s'])
@@ -252,7 +252,10 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
     # we ran out of handlable exceptions, re-start. type_ and value are None for these
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
-    sp.run(['./restart'])
+    #TODO restart is not working when running on docker
+    #sp.run(['./restart'])
+    #sp.run(["./buildAndRunDocker.sh no-build"])
+    #sp.run(["./buildAndRunDocker.sh"])
 
 @bot.event
 async def on_ready():

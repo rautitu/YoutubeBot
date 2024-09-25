@@ -1,4 +1,5 @@
 #!/bin/bash
 
+#next rows to kill locally running bot
 pkill -f youtubebot;
 ./youtubebot.py;
