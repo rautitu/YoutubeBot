@@ -68,18 +68,20 @@ async def remove(ctx: commands.Context, index: int):
 
     # Validate the index provided by the user (1-based for users, 0-based for code)
     if index < 1 or index > queue_length:
-        await ctx.send(f'Invalid index. Please choose a number between 1 and {queue_length} which is the current lenght of the queue.')
+        await ctx.send(f'Invalid index. Please choose a number between 1 and {queue_length}.')
         return
 
     # Remove the item at the given index (adjusting for 0-based indexing)
     removed_item = queues[ctx.guild.id]['queue'].pop(index - 1)
 
-    await ctx.send(f'Removed: **{removed_item["title"]}** from the queue.')
+    # Extract the title from the second element (info dictionary) of the tuple
+    removed_title = removed_item[1].get("title", "Unknown Title")
+    await ctx.send(f'Removed: **{removed_title}** from the queue.')
 
     # If there are still items in the queue, show the updated queue
     if len(queues[ctx.guild.id]['queue']) > 0:
         title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
-        queue_str = ''.join(map(title_str, enumerate([i["title"] for i in queues[ctx.guild.id]['queue']])))
+        queue_str = ''.join(map(title_str, enumerate([i[1].get("title", "Unknown Title") for i in queues[ctx.guild.id]['queue']])))
         embedVar = discord.Embed(color=COLOR)
         embedVar.add_field(name='Updated Queue:', value=queue_str)
         await ctx.send(embed=embedVar)
@@ -89,6 +91,7 @@ async def remove(ctx: commands.Context, index: int):
     # Run any checks needed after the command
     if not await sense_checks(ctx):
         return
+
 
 
 
