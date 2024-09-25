@@ -55,39 +55,42 @@ async def queue(ctx: commands.Context, *args):
     
 @bot.command(name='remove', aliases=['r'])
 async def remove(ctx: commands.Context, index: int):
-    try: 
+    try:
         queue = queues[ctx.guild.id]['queue']
-    except KeyError: 
-        queue = None
-    
-    # If there's no queue, inform the user
-    if queue is None or len(queue) == 0:
+    except KeyError:
         await ctx.send('The bot isn\'t playing anything, so there is nothing to remove.')
         return
 
-    # Validate the index
-    if index < 1 or index > len(queue):
-        await ctx.send(f'Invalid index. Please choose a number between 1 and {len(queue)} which is the current lenght of queue.')
+    queue_length = len(queue)
+    if queue_length <= 0:
+        await ctx.send('The bot isn\'t playing anything, so there is nothing to remove.')
         return
 
-    # Remove the item from the queue
-    removed_item = queue.pop(index - 1)  # Remove by zero-based index
+    # Validate the index provided by the user (1-based for users, 0-based for code)
+    if index < 1 or index > queue_length:
+        await ctx.send(f'Invalid index. Please choose a number between 1 and {queue_length} which is the current lenght of the queue.')
+        return
+
+    # Remove the item at the given index (adjusting for 0-based indexing)
+    removed_item = queues[ctx.guild.id]['queue'].pop(index - 1)
 
     await ctx.send(f'Removed: **{removed_item["title"]}** from the queue.')
 
-    # If you want to update the now playing status or the queue display:
-    if len(queue) == 0:
-        await ctx.send('The queue is now empty.')
+    # If there are still items in the queue, show the updated queue
+    if len(queues[ctx.guild.id]['queue']) > 0:
+        title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
+        queue_str = ''.join(map(title_str, enumerate([i["title"] for i in queues[ctx.guild.id]['queue']])))
+        embedVar = discord.Embed(color=COLOR)
+        embedVar.add_field(name='Updated Queue:', value=queue_str)
+        await ctx.send(embed=embedVar)
     else:
-        #title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
-        #queue_str = ''.join(map(title_str, enumerate([i[1]["title"] for i in queue])))
-        #embedVar = discord.Embed(color=COLOR)
-        #embedVar.add_field(name='Updated Queue:', value=queue_str)
-        #await ctx.send(embed=embedVar)
-        queues[ctx.guild.id]['queue'].pop(index - 1)
-    # Perform any necessary sense checks
-    #if not await sense_checks(ctx):
-        #return
+        await ctx.send('The queue is now empty.')
+
+    # Run any checks needed after the command
+    if not await sense_checks(ctx):
+        return
+
+
 
 
 @bot.command(name='skip', aliases=['s'])
