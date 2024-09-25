@@ -10,17 +10,16 @@ docker build -t $IMAGE_NAME .
 
 # Step 2: Stop and remove existing container (if any)
 # Check if the container is running
-if [ $(docker ps -q -f name=$CONTAINER_NAME) ]; then
-    echo "Stopping and removing running container..."
+if [ -n "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
+    echo "Stopping running container..."
     docker stop $CONTAINER_NAME
-    docker rm $CONTAINER_NAME
 fi
 
 # Remove the container (whether stopped or exited)
-#if [ $(docker ps -a -q -f name=$CONTAINER_NAME) ]; then
-#    echo "Removing existing container..."
-#    docker rm $CONTAINER_NAME
-#fi
+if [ -n "$(docker ps -a -q -f name=$CONTAINER_NAME)" ]; then
+    echo "Removing existing container(s)..."
+    docker rm $CONTAINER_NAME
+fi
 
 # Step 3: Run the new container
 echo "Running the new container..."
