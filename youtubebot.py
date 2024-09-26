@@ -249,9 +249,7 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
     #TODO restart is not working when running on docker
-    #sp.run(['./restart'])
-    #sp.run(["./buildAndRunDocker.sh no-build"])
-    #sp.run(["./buildAndRunDocker.sh"])
+    sp.run(['./restart'])
 
 @bot.event
 async def on_ready():
