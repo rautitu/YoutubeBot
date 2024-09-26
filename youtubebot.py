@@ -38,12 +38,6 @@ def main():
     except discord.PrivilegedIntentsRequired as error:
         return error
 
-#temp command to try restarting
-@bot.command(name='restart')
-async def queue(ctx: commands.Context):
-    await ctx.send('Force restarting')
-    sp.run(['./restart'])
-
 @bot.command(name='queue', aliases=['q'])
 async def queue(ctx: commands.Context, *args):
     try: queue = queues[ctx.guild.id]['queue']

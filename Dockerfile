@@ -4,6 +4,9 @@ FROM python:3.9-slim
 # Install ffmpeg
 RUN apt-get update && apt-get install -y ffmpeg
 
+#getting this python package as well, need it for "pkill" command that was in the original solution
+RUN apt-get update && apt-get install -y procps
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -22,3 +25,6 @@ ENV PYTHONUNBUFFERED=1
 
 # Run your Python script when the container launches
 CMD ["python", "youtubebot.py"]
+
+
+

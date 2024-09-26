@@ -1,20 +1,9 @@
 #!/bin/bash
 
 #next rows to kill locally running bot
-#not usable
-#pkill -f youtubebot;
-#./youtubebot.py;
+#note: needs procps to be installed on docker when running on docker, added installing it to buildAndRunDocker.sh
+echo "force restarting bot"
 
-#getting container name from .env
-if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
-else
-    echo ".env file not found!"
-    exit 1
-fi
+pkill -f youtubebot;
+./youtubebot.py;
 
-# Command to stop the running bot inside the container (if needed)
-sudo docker exec $CONTAINER_NAME pkill -f youtubebot.py;
-
-# Command to start the bot inside the container
-sudo docker exec $CONTAINER_NAME python3 ./youtubebot.py;
