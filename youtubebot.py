@@ -69,32 +69,27 @@ async def remove(ctx: commands.Context, index: int):
     if not await sense_checks(ctx):
         return
 
-    # Validate the index provided by the user 
+    #user input validation
     if index < 0 or index >= queue_length or not isinstance(index, int):
         await ctx.send(f'Invalid index. Please choose a number between 0 (currently playing song) and {queue_length - 1} (current queue length).')
         return
 
-    # If the remove targets currently playing song (index = 0), remove the first item and stop the voice client
+    #if the remove targets currently playing song (index = 0), remove the first item and stop the voice client (forcing a skip essentially)
     if index == 0:
-        # Remove the currently playing song
-        #removed_item = queue.pop(0)
-        #removed_item = queues[ctx.guild.id]['queue'].pop(0)
+        #capturing the currently playing some to a variable
         removed_item = queues[ctx.guild.id]['queue'][0]
-        # Stop the current track, triggering the next song to play
+        #stopping the current track, triggering the next song to play
         voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
         voice_client.stop()
     else:
-        # Remove the item at the given index (adjusting for 0-based indexing)
-        #removed_item = queue.pop(index)
+        #removing the item at the given index
         removed_item = queues[ctx.guild.id]['queue'].pop(index)
 
-    # Extract the title from the second element (info dictionary) of the tuple
     removed_title = removed_item[1].get("title", "Unknown Title")
     await ctx.send(f'Removed: **{removed_title}** from the queue.')
 
-    # If there are still items in the queue, show the updated queue
     if queues[ctx.guild.id]['queue']:
-        await ctx.send(f"Queue length after removal: {len(queues[ctx.guild.id]['queue'])}")
+        await ctx.send(f"Queue length after removal: {len(queues[ctx.guild.id]['queue']) - 1}")
     else:
         await ctx.send('The queue is now empty.')
 
