@@ -3,3 +3,4 @@ pynacl
 yt_dlp
 python-dotenv
 ffmpeg-python
+requests
