@@ -78,7 +78,8 @@ async def remove(ctx: commands.Context, index: int):
     if index == 0:
         # Remove the currently playing song
         #removed_item = queue.pop(0)
-        removed_item = queues[ctx.guild.id]['queue'].pop(0)
+        #removed_item = queues[ctx.guild.id]['queue'].pop(0)
+        removed_item = queues[ctx.guild.id]['queue'][0]
         # Stop the current track, triggering the next song to play
         voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
         voice_client.stop()
