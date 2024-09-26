@@ -52,6 +52,47 @@ async def queue(ctx: commands.Context, *args):
         await ctx.send(embed=embedVar)
     if not await sense_checks(ctx):
         return
+    
+@bot.command(name='remove', aliases=['r'])
+async def remove(ctx: commands.Context, index: int):
+    try:
+        queue = queues[ctx.guild.id]['queue']
+    except KeyError:
+        await ctx.send('The bot isn\'t playing anything, so there is nothing to remove.')
+        return
+
+    queue_length = len(queue)
+    if queue_length <= 0:
+        await ctx.send('The bot isn\'t playing anything, so there is nothing to remove.')
+        return
+
+    if not await sense_checks(ctx):
+        return
+
+    #user input validation
+    if index < 0 or index >= queue_length or not isinstance(index, int):
+        await ctx.send(f'Invalid index. Please choose a number between 0 (currently playing song) and {queue_length - 1} (current queue length).')
+        return
+
+    #if the remove targets currently playing song (index = 0), remove the first item and stop the voice client (forcing a skip essentially)
+    if index == 0:
+        #capturing the currently playing some to a variable
+        removed_item = queues[ctx.guild.id]['queue'][0]
+        #stopping the current track, triggering the next song to play
+        voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
+        voice_client.stop()
+    else:
+        #removing the item at the given index
+        removed_item = queues[ctx.guild.id]['queue'].pop(index)
+
+    removed_title = removed_item[1].get("title", "Unknown Title")
+    await ctx.send(f'Removed: **{removed_title}** from the queue.')
+
+    if queues[ctx.guild.id]['queue']:
+        await ctx.send(f"Queue length after removal: {len(queues[ctx.guild.id]['queue']) - 1}")
+    else:
+        await ctx.send('The queue is now empty.')
+
 
 @bot.command(name='skip', aliases=['s'])
 async def skip(ctx: commands.Context, *args):
@@ -207,7 +248,10 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
     # we ran out of handlable exceptions, re-start. type_ and value are None for these
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
-    sp.run(['./restart'])
+    #TODO restart is not working when running on docker
+    #sp.run(['./restart'])
+    #sp.run(["./buildAndRunDocker.sh no-build"])
+    #sp.run(["./buildAndRunDocker.sh"])
 
 @bot.event
 async def on_ready():

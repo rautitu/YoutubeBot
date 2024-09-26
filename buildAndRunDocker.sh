@@ -13,8 +13,15 @@ fi
 
 
 # Step 1: Build the Docker image
-echo "Building Docker image..."
-docker build -t $IMAGE_NAME .
+# if argument one is "no-build" then skip this
+if [ "$1" != "no-build" ]; then
+    echo "Building Docker image..."
+    docker build -t $IMAGE_NAME .
+else
+    echo "Skipping image build..."
+fi
+
+
 
 # Step 2: Stop and remove existing container (if any)
 # Check if the container is running
