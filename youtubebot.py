@@ -149,18 +149,29 @@ async def play(ctx: commands.Context, *args):
                            'paths': {'home': f'./dl/{server_id}'}}) as ydl:
         try:
             info = ydl.extract_info(query, download=False)
-            #print(f"printing info dict: {info}")
-            print(type(info))
-            duration: str = info.get("duration", None)
-            print(f"dura: {duration}")
         except yt_dlp.utils.DownloadError as err:
             await notify_about_failure(ctx, err)
             return
 
         if 'entries' in info:
             info = info['entries'][0]
+
+        #getting duration of the youtube search entry we have selected
+        video_duration: float = info.get('duration', None)
+        print(f'duration of the video to be played: {video_duration}')
+        #if duration wasnt gotten lets not do anything for now
+        if video_duration == None:
+            await ctx.send(f"Response from youtube did not contain duration property, maybe the API has changed? Wont play as duration was not found")
+            return    
+        #if duration exceeds 1800 seconds = 30 minutes, we info the user that wont play such long and return
+        if video_duration > 1800:
+            await ctx.send(f"Duration of the video exceeds 1800 seconds/30 minutes (duration of the video in link was {video_duration} seconds), will only play max 30 minute videos.")
+            return    
+
         # send link if it was a search, otherwise send title as sending link again would clutter chat with previews
-        await ctx.send('downloading ' + (f'https://youtu.be/{info["id"]}' if will_need_search else f'`{info["title"]}`'))
+        download_info_text: str = 'downloading ' + (f'https://youtu.be/{info["id"]}' if will_need_search else f'`{info["title"]}`')
+        download_info_text: str = f'{download_info_text}, play duration will be {video_duration} seconds'
+        await ctx.send(download_info_text)
         try:
             ydl.download([query])
         except yt_dlp.utils.DownloadError as err:
