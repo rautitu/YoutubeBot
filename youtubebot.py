@@ -149,6 +149,10 @@ async def play(ctx: commands.Context, *args):
                            'paths': {'home': f'./dl/{server_id}'}}) as ydl:
         try:
             info = ydl.extract_info(query, download=False)
+            #print(f"printing info dict: {info}")
+            print(type(info))
+            duration: str = info.get("duration", None)
+            print(f"dura: {duration}")
         except yt_dlp.utils.DownloadError as err:
             await notify_about_failure(ctx, err)
             return
