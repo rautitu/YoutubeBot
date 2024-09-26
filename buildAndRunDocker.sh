@@ -22,6 +22,7 @@ else
 fi
 
 
+
 # Step 2: Stop and remove existing container (if any)
 # Check if the container is running
 if [ -n "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
