@@ -161,7 +161,7 @@ async def play(ctx: commands.Context, *args):
         print(f'duration of the video to be played: {video_duration}')
         #if duration wasnt gotten lets not do anything for now
         if video_duration == None:
-            await ctx.send(f"Response from youtube did not contain duration property, maybe the API has changed? Wont play as duration was not found")
+            await ctx.send(f"Response from youtube did not contain duration property. Wont play anything that does not have a duration")
             return    
         #if duration exceeds 1800 seconds = 30 minutes, we info the user that wont play such long and return
         if video_duration > 1800:
@@ -263,7 +263,6 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
     # we ran out of handlable exceptions, re-start. type_ and value are None for these
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
-    #TODO restart is not working when running on docker
     sp.run(['./restart'])
 
 @bot.event
