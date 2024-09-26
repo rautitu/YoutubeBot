@@ -204,18 +204,18 @@ async def loop(ctx: commands.Context, *args):
 @bot.command(name='joke', aliases=['juuzo'])
 async def skip(ctx: commands.Context):
     joke_site_url: str = "https://icanhazdadjoke.com/"
-    payload = {}
     headers = {
     'Accept': 'application/json'
     }
 
     try:
-        joke: str = requests.request("GET", joke_site_url, headers=headers, data=payload)
+        joke_api_response: str = requests.request("GET", joke_site_url, headers=headers)
+        joke_data: dict = joke_api_response.json()
+        joke: str = joke_data["joke"]
     except Exception as e:
         await ctx.send('Fetching joke failed with an error, view bot logs for the error. You can continue using the bot')
-        print(f'Fetching joke failed with an error: {str(e)}')
-        return
-    
+        print(f'Fetching a joke failed with an error: {str(e)}')
+        return  
     await ctx.send(joke)
 
 def get_voice_client_from_channel_id(channel_id: int):
