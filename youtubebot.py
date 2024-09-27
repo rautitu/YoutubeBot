@@ -40,7 +40,7 @@ def main():
 
 @bot.command(name='restart')
 async def queue(ctx: commands.Context, *args):
-    await ctx.send('Force restarting the bot')
+    await ctx.send('Force restarting the bot, please wait for about 30 seconds for the bot to become responsible again')
     sys.stdout.write(f'Bot was force restarted using restart -command')
     #will exit with a non zero exit value which will trigger automatic restart for the container
     sys.exit(1)
@@ -172,7 +172,7 @@ async def play(ctx: commands.Context, *args):
             return    
         #if duration exceeds 1800 seconds = 30 minutes, we info the user that wont play such long and return
         if video_duration > 1800:
-            await ctx.send(f"Duration of the video exceeds 1800 seconds/30 minutes (duration of the video in link was {video_duration} seconds), will only play max 30 minute videos.")
+            await ctx.send(f"Duration of the video exceeds 1800 seconds/30 minutes (duration of the video in link was {float(video_duration / 60)} minutes), will only play max 30 minute videos.")
             return    
 
         # send link if it was a search, otherwise send title as sending link again would clutter chat with previews
@@ -267,6 +267,7 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
             await ctx.send("command not recognized. To see available commands type {}help".format(PREFIX))
         return
 
+    await ctx.send("Bot hit an unrecognized error. Restarting the bot, please wait for about 30 seconds for the bot to become responsible again")
     # we ran out of handlable exceptions, re-start. type_ and value are None for these
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
