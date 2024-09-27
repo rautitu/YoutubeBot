@@ -60,7 +60,17 @@ log_container() {
   done
 }
 
+# Function to cleanup log files that are older than 60 days
+cleanup_logs() {
+    find "${LOG_DIR}/${CONTAINER_NAME}" -type f -name "container_*.log" -mtime +60 -exec rm {} \;
+}
+
+
 # Start logging
 log_container &
+
+# Call the cleanup function after starting logging
+cleanup_logs
+
 
 echo "Container is running!"
