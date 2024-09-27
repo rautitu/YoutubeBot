@@ -47,6 +47,7 @@ docker run \
     --name "$CONTAINER_NAME" \
     $IMAGE_NAME
 
+# Step 4: Attaching a logging mechanism and a cleanup mechanism for old logs
 # Function to attach logs and keep logging
 log_container() {
   while true; do
@@ -65,12 +66,10 @@ cleanup_logs() {
     find "${LOG_DIR}/${CONTAINER_NAME}" -type f -name "container_*.log" -mtime +60 -exec rm {} \;
 }
 
-
 # Start logging
 log_container &
 
 # Call the cleanup function after starting logging
 cleanup_logs
-
 
 echo "Container is running!"
