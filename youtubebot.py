@@ -12,6 +12,7 @@ import shutil
 import sys
 import subprocess as sp
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
@@ -205,6 +206,23 @@ async def loop(ctx: commands.Context, *args):
     queues[ctx.guild.id]['loop'] = not loop
 
     await ctx.send('looping is now ' + ('on' if not loop else 'off'))
+
+@bot.command(name='joke', aliases=['juuzo'])
+async def skip(ctx: commands.Context):
+    joke_site_url: str = "https://icanhazdadjoke.com/"
+    headers = {
+    'Accept': 'application/json'
+    }
+
+    try:
+        joke_api_response: str = requests.request("GET", joke_site_url, headers=headers)
+        joke_data: dict = joke_api_response.json()
+        joke: str = joke_data["joke"]
+    except Exception as e:
+        await ctx.send('Fetching joke failed with an error, view bot logs for the error. You can continue using the bot')
+        print(f'Fetching a joke failed with an error: {str(e)}')
+        return  
+    await ctx.send(joke)
 
 def get_voice_client_from_channel_id(channel_id: int):
     for voice_client in bot.voice_clients:
