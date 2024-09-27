@@ -272,8 +272,6 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
     # we ran out of handlable exceptions, re-start. type_ and value are None for these
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
-    #TODO: collect stderr somewhere? the logic here now restarts the docker container and thus the logs are gone unless passed out
-    #will exit with a non zero exit value which will trigger automatic restart for the container
     sys.exit(1)
 
 @bot.event
