@@ -15,7 +15,7 @@ fi
 mkdir -p "${LOG_DIR}/${CONTAINER_NAME}"
 
 #creating a timestamp for the log file name
-#LOG_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 # Step 1: Build the Docker image
 # if argument one is "no-build" then skip this
@@ -48,23 +48,7 @@ docker run \
     $IMAGE_NAME
 
 # Step 4: Attaching a logging mechanism and a cleanup mechanism for old logs
-# Function to attach logs and keep logging
-log_container() {
-  while true; do
-    # Check if the container is running
-    if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
-      # Generate a new log timestamp for each run
-      NEW_LOG_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-      
-      # Start a new log file for each restart
-      #echo "Logging to ${LOG_DIR}/${CONTAINER_NAME}/container_${NEW_LOG_TIMESTAMP}.log"
-      docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${NEW_LOG_TIMESTAMP}.log" 2>&1
-    else
-      echo "Container stopped. Exiting logging."
-      break
-    fi
-  done
-}
+docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1
 
 
 # Function to cleanup log files that are older than 60 days
