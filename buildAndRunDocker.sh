@@ -56,9 +56,6 @@ cleanup_logs() {
     find "${LOG_DIR}/${CONTAINER_NAME}" -type f -name "container_*.log" -mtime +60 -exec rm {} \;
 }
 
-# Start logging
-log_container &
-
 # Call the cleanup function after starting logging
 cleanup_logs
 
