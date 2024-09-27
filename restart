@@ -1,9 +1,0 @@
-#!/bin/bash
-
-#next rows to kill locally running bot
-#note: needs procps to be installed on docker when running on docker, added installing it to buildAndRunDocker.sh
-echo "force restarting bot"
-
-pkill -f youtubebot;
-./youtubebot.py;
-

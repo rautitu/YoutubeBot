@@ -38,6 +38,12 @@ def main():
     except discord.PrivilegedIntentsRequired as error:
         return error
 
+@bot.command(name='restart')
+async def queue(ctx: commands.Context, *args):
+    await ctx.send('Force restarting the bot')
+    #will exit with a non zero exit value which will trigger automatic restart for the container
+    sys.exit(1)
+
 @bot.command(name='queue', aliases=['q'])
 async def queue(ctx: commands.Context, *args):
     try: queue = queues[ctx.guild.id]['queue']
@@ -263,7 +269,9 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
     # we ran out of handlable exceptions, re-start. type_ and value are None for these
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
-    sp.run(['./restart'])
+    #TODO: collect stderr somewhere? the logic here now restarts the docker container and thus the logs are gone unless passed out
+    #will exit with a non zero exit value which will trigger automatic restart for the container
+    sys.exit(1)
 
 @bot.event
 async def on_ready():
