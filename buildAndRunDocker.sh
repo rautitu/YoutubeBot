@@ -38,6 +38,6 @@ fi
 
 # Step 3: Run the new container
 echo "Running the new container..."
-docker run -d --name $CONTAINER_NAME $IMAGE_NAME
+docker run --restart=on-failure -d --name $CONTAINER_NAME $IMAGE_NAME
 
 echo "Container is running!"
