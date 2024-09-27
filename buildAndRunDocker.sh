@@ -57,10 +57,11 @@ log_container() {
       NEW_LOG_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
       
       # Start a new log file for each restart
-      echo "Logging to ${LOG_DIR}/${CONTAINER_NAME}/container_${NEW_LOG_TIMESTAMP}.log"
+      #echo "Logging to ${LOG_DIR}/${CONTAINER_NAME}/container_${NEW_LOG_TIMESTAMP}.log"
       docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${NEW_LOG_TIMESTAMP}.log" 2>&1
     else
       echo "Container stopped. Exiting logging."
+      break
     fi
   done
 }
