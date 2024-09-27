@@ -41,7 +41,7 @@ def main():
 
 @bot.command(name='restart')
 async def queue(ctx: commands.Context, *args):
-    await ctx.send('Force restarting the bot, please wait for about 30 seconds for the bot to become responsible again')
+    await ctx.send('Force restarting the bot, please wait for about 30 seconds for the bot to become responsive again')
     sys.stdout.write(f'Bot was force restarted using restart -command')
     #will exit with a non zero exit value which will trigger automatic restart for the container
     sys.exit(1)
@@ -286,7 +286,7 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
             await ctx.send("command not recognized. To see available commands type {}help".format(PREFIX))
         return
 
-    await ctx.send("Bot hit an unrecognized error. Restarting the bot, please wait for about 30 seconds for the bot to become responsible again")
+    await ctx.send("Bot hit an unrecognized error. Restarting the bot, please wait for about 30 seconds for the bot to become responsive again")
     # we ran out of handlable exceptions, re-start. type_ and value are None for these
     sys.stderr.write(f'unhandled command error raised, {err=}')
     sys.stderr.flush()
@@ -295,6 +295,7 @@ async def on_command_error(ctx: discord.ext.commands.Context, err: discord.ext.c
 @bot.event
 async def on_ready():
     print(f'logged in successfully as {bot.user.name}')
+
 async def notify_about_failure(ctx: commands.Context, err: yt_dlp.utils.DownloadError):
     if BOT_REPORT_DL_ERROR:
         # remove shell colors for discord message
