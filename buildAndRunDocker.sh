@@ -47,7 +47,20 @@ docker run \
     --name "$CONTAINER_NAME" \
     $IMAGE_NAME
 
-#capturing the logs and writing them to a file with the timestamp in the name
-docker logs -f "$CONTAINER_NAME" > "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1 &
+# Function to attach logs and keep logging
+log_container() {
+  while true; do
+    if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
+      # Attach logs if the container is running
+      docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1
+    else
+      echo "Waiting for container to restart..."
+      sleep 5  # Wait and retry if the container is not running yet
+    fi
+  done
+}
+
+# Start logging
+log_container &
 
 echo "Container is running!"
