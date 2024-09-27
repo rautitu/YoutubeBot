@@ -41,6 +41,7 @@ def main():
 @bot.command(name='restart')
 async def queue(ctx: commands.Context, *args):
     await ctx.send('Force restarting the bot')
+    sys.stdout.write(f'Bot was force restarted using restart -command')
     #will exit with a non zero exit value which will trigger automatic restart for the container
     sys.exit(1)
 
