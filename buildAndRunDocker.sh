@@ -51,15 +51,27 @@ docker run \
 # Function to attach logs and keep logging
 log_container() {
   while true; do
+    # Check if the container is running
     if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
       # Attach logs if the container is running
       docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1
     else
-      echo "Waiting for container to restart..."
-      sleep 5  # Wait and retry if the container is not running yet
+      # Check the exit code of the stopped container
+      EXIT_CODE=$(docker inspect --format='{{.State.ExitCode}}' "$CONTAINER_NAME")
+
+      if [ "$EXIT_CODE" -eq 0 ]; then
+        # Container was stopped manually (exit code 0), so break the loop
+        echo "Container stopped manually with exit code 0. Exiting..."
+        break
+      else
+        # Container failed (non-zero exit code), so wait and retry
+        echo "Waiting for container to restart..."
+        sleep 5  # Wait and retry if the container is not running yet
+      fi
     fi
   done
 }
+
 
 # Function to cleanup log files that are older than 60 days
 cleanup_logs() {
