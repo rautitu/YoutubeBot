@@ -15,7 +15,7 @@ fi
 mkdir -p "${LOG_DIR}/${CONTAINER_NAME}"
 
 #creating a timestamp for the log file name
-LOG_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+#LOG_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 # Step 1: Build the Docker image
 # if argument one is "no-build" then skip this
@@ -53,21 +53,14 @@ log_container() {
   while true; do
     # Check if the container is running
     if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
-      # Attach logs if the container is running
-      docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1
+      # Generate a new log timestamp for each run
+      NEW_LOG_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+      
+      # Start a new log file for each restart
+      echo "Logging to ${LOG_DIR}/${CONTAINER_NAME}/container_${NEW_LOG_TIMESTAMP}.log"
+      docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${NEW_LOG_TIMESTAMP}.log" 2>&1
     else
-      # Check the exit code of the stopped container
-      EXIT_CODE=$(docker inspect --format='{{.State.ExitCode}}' "$CONTAINER_NAME")
-
-      if [ "$EXIT_CODE" -eq 0 ]; then
-        # Container was stopped manually (exit code 0), so break the loop
-        echo "Container stopped manually with exit code 0. Exiting..."
-        break
-      else
-        # Container failed (non-zero exit code), so wait and retry
-        echo "Waiting for container to restart..."
-        sleep 5  # Wait and retry if the container is not running yet
-      fi
+      echo "Container stopped. Exiting logging."
     fi
   done
 }
