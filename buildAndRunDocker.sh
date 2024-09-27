@@ -48,8 +48,7 @@ docker run \
     $IMAGE_NAME
 
 # Step 4: Attaching a logging mechanism and a cleanup mechanism for old logs
-docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1 &
-
+docker logs -t -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1 &
 
 # Function to cleanup log files that are older than 60 days
 cleanup_logs() {
