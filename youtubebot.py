@@ -165,7 +165,7 @@ async def play(ctx: commands.Context, *args):
 
         #getting duration of the youtube search entry we have selected
         video_duration: float = info.get('duration', None)
-        video_duration_minutes: float = video_duration / 60
+        video_duration_minutes: float = round(video_duration / 60, 2)
         print(f'duration of the video to be played: {video_duration}')
         #if duration wasnt gotten lets not do anything for now
         if video_duration == None:
