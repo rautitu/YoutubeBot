@@ -48,26 +48,14 @@ docker run \
     $IMAGE_NAME
 
 # Step 4: Attaching a logging mechanism and a cleanup mechanism for old logs
-# Function to attach logs and keep logging
-log_container() {
-  while true; do
-    if docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" | grep -q "$CONTAINER_NAME"; then
-      # Attach logs if the container is running
-      docker logs -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1
-    else
-      echo "Waiting for container to restart..."
-      sleep 5  # Wait and retry if the container is not running yet
-    fi
-  done
-}
+#NOTE: If docker restarts, new logs will not be stored for that session. Reason is that this command does not run during restart
+#and I found no way to run this during restart. Probably some heartneat approach would be the way.
+docker logs -t -f "$CONTAINER_NAME" >> "${LOG_DIR}/${CONTAINER_NAME}/container_${LOG_TIMESTAMP}.log" 2>&1 &
 
 # Function to cleanup log files that are older than 60 days
 cleanup_logs() {
     find "${LOG_DIR}/${CONTAINER_NAME}" -type f -name "container_*.log" -mtime +60 -exec rm {} \;
 }
-
-# Start logging
-log_container &
 
 # Call the cleanup function after starting logging
 cleanup_logs
