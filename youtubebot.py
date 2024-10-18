@@ -135,8 +135,8 @@ async def skip(ctx: commands.Context, *args):
 async def leave(ctx: commands.Context):
     voice_client = ctx.guild.voice_client  
     if voice_client and voice_client.is_connected(): 
-        await voice_client.disconnect()  
         await ctx.send(f"Disconnected from {voice_client.channel}.") 
+        await voice_client.disconnect()  
     else:
         await ctx.send("The bot is not connected to a voice channel, did nothing.")  
 
