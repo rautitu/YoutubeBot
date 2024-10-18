@@ -131,7 +131,7 @@ async def skip(ctx: commands.Context, *args):
         queues[ctx.guild.id]['queue'].pop(0)
     voice_client.stop()
 
-@bot.command(name='leave', aliases=['l'])
+@bot.command(name='leave')
 async def leave(ctx: commands.Context):
     voice_client = ctx.guild.voice_client  
     if voice_client and voice_client.is_connected(): 
