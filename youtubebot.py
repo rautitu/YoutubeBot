@@ -131,6 +131,25 @@ async def skip(ctx: commands.Context, *args):
         queues[ctx.guild.id]['queue'].pop(0)
     voice_client.stop()
 
+@bot.command(name='leave')
+async def leave(ctx: commands.Context):
+    #voice_client = ctx.guild.voice_client  
+    voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
+    server_id = ctx.guild.id
+    if voice_client and voice_client.is_connected():
+        if voice_client.is_playing():  # Stop any audio that is playing
+            print("leave-command used, stopped current audio playback")
+            voice_client.stop()  # This will stop the FFmpeg process
+        queues.pop(server_id) # directory will be deleted on disconnect, will lead to error 
+        message: str = f"Leaving channel {voice_client.channel}."
+        print(f"leave-command used: {message}")
+        await ctx.send(message) 
+        await voice_client.disconnect()  
+    else:
+        message: str = "The bot is not connected to a voice channel, did nothing."
+        print(f"leave-command used: {message}")
+        await ctx.send(message)  
+
 @bot.command(name='play', aliases=['p'])
 async def play(ctx: commands.Context, *args):
     voice_state = ctx.author.voice
