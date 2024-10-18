@@ -131,6 +131,15 @@ async def skip(ctx: commands.Context, *args):
         queues[ctx.guild.id]['queue'].pop(0)
     voice_client.stop()
 
+@bot.command(name='leave', aliases=['l'])
+async def leave(ctx: commands.Context):
+    voice_client = ctx.guild.voice_client  
+    if voice_client and voice_client.is_connected(): 
+        await voice_client.disconnect()  
+        await ctx.send(f"Disconnected from {voice_client.channel}.") 
+    else:
+        await ctx.send("The bot is not connected to a voice channel, did nothing.")  
+
 @bot.command(name='play', aliases=['p'])
 async def play(ctx: commands.Context, *args):
     voice_state = ctx.author.voice
