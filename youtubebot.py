@@ -137,6 +137,8 @@ async def leave(ctx: commands.Context):
     voice_client = get_voice_client_from_channel_id(ctx.author.voice.channel.id)
     server_id = ctx.guild.id
     if voice_client and voice_client.is_connected():
+        if voice_client.is_playing():  # Stop any audio that is playing
+            voice_client.stop()  # This will stop the FFmpeg process
         queues.pop(server_id) # directory will be deleted on disconnect, will lead to error 
         message: str = f"Leaving channel {voice_client.channel}."
         print(f"leave-command used: {message}")
