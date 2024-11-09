@@ -179,6 +179,8 @@ async def play(ctx: commands.Context, *args):
         except yt_dlp.utils.DownloadError as err:
             await notify_about_failure(ctx, err)
             return
+        
+        await ctx.send(f"Response from youtube type: {type(info)}, content: {info}")
 
         if 'entries' in info:
             info = info['entries'][0]
