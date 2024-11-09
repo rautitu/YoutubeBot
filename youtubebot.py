@@ -187,7 +187,7 @@ async def play(ctx: commands.Context, *args):
             if len(info['entries']) > 0:
                 info = info['entries'][0]
             else:
-                await ctx.send(f"No results found with {query}.")
+                await ctx.send(f"No results found with `{query}`.")
                 return
                 
 
