@@ -140,10 +140,12 @@ async def leave(ctx: commands.Context):
         if voice_client.is_playing():  # Stop any audio that is playing
             print("leave-command used, stopped current audio playback")
             voice_client.stop()  # This will stop the FFmpeg process
+            await asyncio.sleep(1) #waiting 1 sec
         queues.pop(server_id) # directory will be deleted on disconnect, will lead to error 
         message: str = f"Leaving channel {voice_client.channel}."
         print(f"leave-command used: {message}")
         await ctx.send(message) 
+        await asyncio.sleep(1) #waiting 1 sec
         await voice_client.disconnect()  
     else:
         message: str = "The bot is not connected to a voice channel, did nothing."
@@ -190,7 +192,6 @@ async def play(ctx: commands.Context, *args):
                 await ctx.send(f"No results found with `{query}`.")
                 return
                 
-
         #getting duration of the youtube search entry we have selected
         video_duration: float = info.get('duration', None)
         video_duration_minutes: float = round(video_duration / 60, 2)
