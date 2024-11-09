@@ -180,10 +180,16 @@ async def play(ctx: commands.Context, *args):
             await notify_about_failure(ctx, err)
             return
         
-        await ctx.send(f"Response from youtube type: {type(info)}, content: {info}")
+        #NOTE: just a test print to discord chat
+        #await ctx.send(f"Response from youtube type: {type(info)}, content (100 first chars): {str(info)[0:100]}")
 
         if 'entries' in info:
-            info = info['entries'][0]
+            if len(info['entries']) > 0:
+                info = info['entries'][0]
+            else:
+                await ctx.send(f"No results found with {query}.")
+                return
+                
 
         #getting duration of the youtube search entry we have selected
         video_duration: float = info.get('duration', None)
