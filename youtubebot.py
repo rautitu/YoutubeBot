@@ -187,9 +187,8 @@ def get_ydl_options(server_id: int, is_playing: bool = False) -> dict:
     
     # Throttle download if currently playing to prevent audio stuttering
     if is_playing:
+        print(f'Currently playing a song so dowloading will be limited to {DOWNLOAD_RATE_LIMIT}')
         options['limit-rate'] = DOWNLOAD_RATE_LIMIT
-        #options['ratelimit'] = DOWNLOAD_RATE_LIMIT
-        #options['ratelimit'] = 500
     
     return options
 
