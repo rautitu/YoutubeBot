@@ -21,6 +21,9 @@ YTDL_FORMAT = os.getenv('YTDL_FORMAT', 'worstaudio')
 PRINT_STACK_TRACE = os.getenv('PRINT_STACK_TRACE', '1').lower() in ('true', 't', '1')
 BOT_REPORT_COMMAND_NOT_FOUND = os.getenv('BOT_REPORT_COMMAND_NOT_FOUND', '1').lower() in ('true', 't', '1')
 BOT_REPORT_DL_ERROR = os.getenv('BOT_REPORT_DL_ERROR', '0').lower() in ('true', 't', '1')
+MAX_DURATION_SECONDS = os.getenv('MAX_DURATION_SECONDS')
+DOWNLOAD_RATE_LIMIT = os.getenv('DOWNLOAD_RATE_LIMIT')
+
 try:
     COLOR = int(os.getenv('BOT_COLOR', 'ff0000'), 16)
 except ValueError:
