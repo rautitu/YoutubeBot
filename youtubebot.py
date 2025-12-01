@@ -233,6 +233,7 @@ async def validate_duration(ctx: commands.Context, info: dict) -> bool:
         True if duration is valid, False otherwise
     """
     video_duration = info.get('duration', None)
+    print(type(video_duration))
     
     if video_duration is None:
         await ctx.send("Response from youtube did not contain duration property. "
