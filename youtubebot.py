@@ -21,7 +21,7 @@ YTDL_FORMAT = os.getenv('YTDL_FORMAT', 'worstaudio')
 PRINT_STACK_TRACE = os.getenv('PRINT_STACK_TRACE', '1').lower() in ('true', 't', '1')
 BOT_REPORT_COMMAND_NOT_FOUND = os.getenv('BOT_REPORT_COMMAND_NOT_FOUND', '1').lower() in ('true', 't', '1')
 BOT_REPORT_DL_ERROR = os.getenv('BOT_REPORT_DL_ERROR', '0').lower() in ('true', 't', '1')
-MAX_DURATION_SECONDS = os.getenv('MAX_DURATION_SECONDS')
+MAX_DURATION_SECONDS = int(os.getenv('MAX_DURATION_SECONDS'))
 DOWNLOAD_RATE_LIMIT = os.getenv('DOWNLOAD_RATE_LIMIT')
 
 try:
@@ -233,7 +233,6 @@ async def validate_duration(ctx: commands.Context, info: dict) -> bool:
         True if duration is valid, False otherwise
     """
     video_duration = info.get('duration', None)
-    print(type(video_duration))
     
     if video_duration is None:
         await ctx.send("Response from youtube did not contain duration property. "
