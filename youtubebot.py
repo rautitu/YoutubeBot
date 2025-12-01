@@ -153,78 +153,216 @@ async def leave(ctx: commands.Context):
         print(f"leave-command used: {message}")
         await ctx.send(message)  
 
-@bot.command(name='play', aliases=['p'])
-async def play(ctx: commands.Context, *args):
-    voice_state = ctx.author.voice
-    if not await sense_checks(ctx, voice_state=voice_state):
-        return
+def is_bot_playing(server_id: int) -> bool:
+    """Check if bot is currently playing audio in this server."""
+    try:
+        if server_id not in queues:
+            return False
+        # Check if there's a queue and if any voice client is playing for this server
+        for voice_client in bot.voice_clients:
+            if voice_client.guild.id == server_id and voice_client.is_playing():
+                return True
+        return False
+    except:
+        return False
 
-    query = ' '.join(args)
-    # this is how it's determined if the url is valid (i.e. whether to search or not) under the hood of yt-dlp
+
+def get_ydl_options(server_id: int, is_playing: bool = False) -> dict:
+    """
+    Build yt-dlp options dictionary.
+    
+    Args:
+        server_id: Guild/server ID for download path
+        is_playing: Whether bot is currently playing audio (throttles download if True)
+    """
+    options = {
+        'format': YTDL_FORMAT,
+        'source_address': '0.0.0.0',  # Force IPv4
+        'default_search': 'ytsearch',
+        'outtmpl': '%(id)s.%(ext)s',
+        'noplaylist': True,
+        'allow_playlist_files': False,
+        'paths': {'home': f'./dl/{server_id}'}
+    }
+    
+    # Throttle download if currently playing to prevent audio stuttering
+    if is_playing:
+        options['ratelimit'] = DOWNLOAD_RATE_LIMIT
+    
+    return options
+
+
+async def fetch_info(ctx: commands.Context, query: str, server_id: int, is_playing: bool = False) -> dict | None:
+    """
+    Fetch video info from YouTube without downloading.
+    
+    Returns:
+        Video info dict or None if failed
+    """
     will_need_search = not urllib.parse.urlparse(query).scheme
-
-    server_id = ctx.guild.id
-
-    # source address as 0.0.0.0 to force ipv4 because ipv6 breaks it for some reason
-    # this is equivalent to --force-ipv4 (line 312 of https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/options.py)
+    
     await ctx.send(f'looking for `{query}`...')
-    with yt_dlp.YoutubeDL({'format': YTDL_FORMAT,
-                           'source_address': '0.0.0.0',
-                           'default_search': 'ytsearch',
-                           'outtmpl': '%(id)s.%(ext)s',
-                           'noplaylist': True,
-                           'allow_playlist_files': False,
-                           # 'progress_hooks': [lambda info, ctx=ctx: video_progress_hook(ctx, info)],
-                           # 'match_filter': lambda info, incomplete, will_need_search=will_need_search, ctx=ctx: start_hook(ctx, info, incomplete, will_need_search),
-                           'paths': {'home': f'./dl/{server_id}'}}) as ydl:
+    
+    ydl_opts = get_ydl_options(server_id, is_playing)
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             info = ydl.extract_info(query, download=False)
         except yt_dlp.utils.DownloadError as err:
             await notify_about_failure(ctx, err)
-            return
+            return None
         
-        #NOTE: just a test print to discord chat
-        #await ctx.send(f"Response from youtube type: {type(info)}, content (100 first chars): {str(info)[0:100]}")
-
+        # Handle search results
         if 'entries' in info:
             if len(info['entries']) > 0:
                 info = info['entries'][0]
             else:
                 await ctx.send(f"No results found with `{query}`.")
-                return
-                
+                return None
+        
+        # Add search flag to info for later use
+        info['_will_need_search'] = will_need_search
+        return info
 
-        #getting duration of the youtube search entry we have selected
-        video_duration: float = info.get('duration', None)
-        video_duration_minutes: float = round(video_duration / 60, 2)
-        print(f'duration of the video to be played: {video_duration}')
-        #if duration wasnt gotten lets not do anything for now
-        if video_duration == None:
-            await ctx.send(f"Response from youtube did not contain duration property. Wont play anything that does not have a duration")
-            return    
-        #if duration exceeds 1800 seconds = 30 minutes, we info the user that wont play such long and return
-        if video_duration > 1800:
-            await ctx.send(f"Duration of the video exceeds 1800 seconds/30 minutes (duration of the video in link was {video_duration_minutes} minutes), will only play max 30 minute videos.")
-            return    
 
-        # send link if it was a search, otherwise send title as sending link again would clutter chat with previews
-        download_info_text: str = 'downloading ' + (f'https://youtu.be/{info["id"]}' if will_need_search else f'`{info["title"]}`')
-        download_info_text: str = f'{download_info_text}, play duration will be {video_duration_minutes} minutes'
-        await ctx.send(download_info_text)
+async def validate_duration(ctx: commands.Context, info: dict) -> bool:
+    """
+    Validate video duration is within acceptable limits.
+    
+    Returns:
+        True if duration is valid, False otherwise
+    """
+    video_duration = info.get('duration', None)
+    
+    if video_duration is None:
+        await ctx.send("Response from youtube did not contain duration property. "
+                      "Won't play anything that does not have a duration")
+        return False
+    
+    video_duration_minutes = round(video_duration / 60, 2)
+    print(f'duration of the video to be played: {video_duration}')
+    
+    if video_duration > MAX_DURATION_SECONDS:
+        await ctx.send(f"Duration of the video exceeds {MAX_DURATION_SECONDS} seconds/"
+                      f"{MAX_DURATION_SECONDS//60} minutes (duration of the video in link was "
+                      f"{video_duration_minutes} minutes), will only play max "
+                      f"{MAX_DURATION_SECONDS//60} minute videos.")
+        return False
+    
+    return True
+
+
+async def send_download_message(ctx: commands.Context, info: dict):
+    """Send informative download message to user."""
+    will_need_search = info.get('_will_need_search', False)
+    video_duration = info.get('duration', 0)
+    video_duration_minutes = round(video_duration / 60, 2)
+    
+    # Send link if it was a search, otherwise send title to avoid preview clutter
+    if will_need_search:
+        download_info = f'downloading https://youtu.be/{info["id"]}'
+    else:
+        download_info = f'downloading `{info["title"]}`'
+    
+    download_info += f', play duration will be {video_duration_minutes} minutes'
+    await ctx.send(download_info)
+
+
+async def download_audio(ctx: commands.Context, query: str, server_id: int, is_playing: bool = False) -> bool:
+    """
+    Download audio file with optional bandwidth throttling.
+    
+    Args:
+        ctx: Command context
+        query: Search query or URL
+        server_id: Guild/server ID
+        is_playing: Whether bot is currently playing (throttles download if True)
+    
+    Returns:
+        True if successful, False otherwise
+    """
+    ydl_opts = get_ydl_options(server_id, is_playing)
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             ydl.download([query])
+            return True
         except yt_dlp.utils.DownloadError as err:
             await notify_about_failure(ctx, err)
-            return
-        path = f'./dl/{server_id}/{info["id"]}.{info["ext"]}'
-        try:
-            queues[server_id]['queue'].append((path, info))
-        except KeyError: # first in queue
-            queues[server_id] = {'queue': [(path, info)], 'loop': False}
-            try: connection = await voice_state.channel.connect()
-            except discord.ClientException: connection = get_voice_client_from_channel_id(voice_state.channel.id)
-            connection.play(discord.FFmpegOpusAudio(path), after=lambda error=None, connection=connection, server_id=server_id:
-                                                             after_track(error, connection, server_id))
+            return False
+
+
+def add_to_queue(server_id: int, path: str, info: dict):
+    """
+    Add track to server queue.
+    
+    Returns:
+        True if this is the first track (queue was created), False if added to existing queue
+    """
+    try:
+        queues[server_id]['queue'].append((path, info))
+        return False  # Queue already existed
+    except KeyError:
+        # First track in queue
+        queues[server_id] = {'queue': [(path, info)], 'loop': False}
+        return True  # Queue was just created
+
+
+async def start_playback(voice_state: discord.VoiceState, server_id: int, path: str):
+    """
+    Connect to voice channel and start playback.
+    Should only be called for the first track in queue.
+    """
+    try:
+        connection = await voice_state.channel.connect()
+    except discord.ClientException:
+        connection = get_voice_client_from_channel_id(voice_state.channel.id)
+    
+    connection.play(
+        discord.FFmpegOpusAudio(path),
+        after=lambda error=None, connection=connection, server_id=server_id:
+            after_track(error, connection, server_id)
+    )
+
+
+@bot.command(name='play', aliases=['p'])
+async def play(ctx: commands.Context, *args):
+    """Main play command - orchestrates the music playing process."""
+    voice_state = ctx.author.voice
+    if not await sense_checks(ctx, voice_state=voice_state):
+        return
+
+    query = ' '.join(args)
+    server_id = ctx.guild.id
+    
+    # Check if bot is currently playing to determine if we should throttle
+    currently_playing = is_bot_playing(server_id)
+    
+    # Fetch video info (without downloading)
+    info = await fetch_info(ctx, query, server_id, currently_playing)
+    if info is None:
+        return
+    
+    # Validate duration limits
+    if not await validate_duration(ctx, info):
+        return
+    
+    # Inform user about download
+    await send_download_message(ctx, info)
+    
+    # Download with potential bandwidth throttling
+    if not await download_audio(ctx, query, server_id, currently_playing):
+        return
+    
+    # Build file path
+    path = f'./dl/{server_id}/{info["id"]}.{info["ext"]}'
+    
+    # Add to queue and check if this is the first track
+    is_first_track = add_to_queue(server_id, path, info)
+    
+    # Only start playback if this is the first track
+    if is_first_track:
+        await start_playback(voice_state, server_id, path)
 
 @bot.command('loop', aliases=['l'])
 async def loop(ctx: commands.Context, *args):
