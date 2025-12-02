@@ -43,7 +43,7 @@ def main():
         return error
 
 @bot.command(name='restart')
-async def queue(ctx: commands.Context, *args):
+async def restart(ctx: commands.Context, *args):
     await ctx.send('Force restarting the bot, please wait for about 30 seconds for the bot to become responsive again')
     sys.stdout.write(f'Bot was force restarted using restart -command')
     #will exit with a non zero exit value which will trigger automatic restart for the container
@@ -379,7 +379,7 @@ async def loop(ctx: commands.Context, *args):
     await ctx.send('looping is now ' + ('on' if not loop else 'off'))
 
 @bot.command(name='joke', aliases=['juuzo'])
-async def skip(ctx: commands.Context):
+async def joke(ctx: commands.Context):
     joke_site_url: str = "https://icanhazdadjoke.com/"
     headers = {
     'Accept': 'application/json'
