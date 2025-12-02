@@ -15,6 +15,6 @@ services:
       - ${LOG_DIR}/${CONTAINER_NAME}:/app/logs
 
     ports:
-      - "8000:8000"
+      - "9000:8000"
 
     command: ["python", "youtubebot.py"]
