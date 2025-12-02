@@ -22,8 +22,8 @@ docker compose up -d         # Start detached
 # Optional: show logs live (but compose already timestamps them)
 #docker compose logs -f youtubebot &
 
-# Cleanup logs older than 60 days:
-find "${LOG_DIR}/${CONTAINER_NAME}" \
-    -type f -name "container_*.log" -mtime +60 -exec rm {} \;
+## Cleanup logs older than 60 days:
+#find "${LOG_DIR}/${CONTAINER_NAME}" \
+#    -type f -name "container_*.log" -mtime +60 -exec rm {} \;
 
 echo "Container is running under Docker Compose!"
