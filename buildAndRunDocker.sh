@@ -8,26 +8,22 @@ else
     exit 1
 fi
 
-# Create the log directory on the host (silently)
+# Create the log directory on the host
 mkdir -p "${LOG_DIR}/${CONTAINER_NAME}"
 
-# 1. BUILD
+# Build + recreate container (unless argument is "no-build")
 if [ "$1" != "no-build" ]; then
-    echo "Building docker image..."
-    docker compose build 
+    docker compose build
 fi
 
-# 2. STOP OLD CONTAINER 
-docker compose down
+docker compose down          # Stop & remove container cleanly
+docker compose up -d         # Start detached
 
-# 3. START SILENTLY
-# -d is detached
-# --quiet (or -q) hides the "Container Started" progress bars
-# --remove-orphans cleans up old containers not in the compose file
-docker compose up -d --quiet --remove-orphans
+# Optional: show logs live (but compose already timestamps them)
+#docker compose logs -f youtubebot &
 
 # Cleanup logs older than 60 days:
 find "${LOG_DIR}/${CONTAINER_NAME}" \
     -type f -name "container_*.log" -mtime +60 -exec rm {} \;
 
-echo "Success! ${CONTAINER_NAME} is running in the background."
+echo "Container is running under Docker Compose!"
