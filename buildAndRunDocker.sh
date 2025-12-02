@@ -13,7 +13,7 @@ mkdir -p "${LOG_DIR}/${CONTAINER_NAME}"
 
 # Build + recreate container (unless argument is "no-build")
 if [ "$1" != "no-build" ]; then
-    docker compose build --quiet
+    docker compose build
 fi
 
 docker compose down          # Stop & remove container cleanly
