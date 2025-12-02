@@ -1,29 +1,29 @@
 #!/bin/bash
 
+# Load .env file
 if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
 else
-    echo ".env file not found!" >&2
+    echo ".env file not found!"
     exit 1
 fi
 
-# creating log directory on the host if it doesnt exist
+# Create the log directory on the host
 mkdir -p "${LOG_DIR}/${CONTAINER_NAME}"
 
-# build + recreate container (unless argument is "no-build")
+# Build + recreate container (unless argument is "no-build")
 if [ "$1" != "no-build" ]; then
-    docker compose build > "${LOG_DIR}/${CONTAINER_NAME}/build_$(date +%Y%m%d_%H%M%S).log"
+    docker compose build
 fi
 
-docker compose down
-docker compose up -d
+docker compose down          # Stop & remove container cleanly
+docker compose up -d         # Start detached
 
-# Optional: tail logs to a file for debugging if needed
-# docker compose logs --tail=100 > "${LOG_DIR}/${CONTAINER_NAME}/startup_$(date +%Y%m%d_%H%M%S).log"
+# Optional: show logs live (but compose already timestamps them)
+#docker compose logs -f youtubebot &
 
 # Cleanup logs older than 60 days:
 find "${LOG_DIR}/${CONTAINER_NAME}" \
     -type f -name "container_*.log" -mtime +60 -exec rm {} \;
 
-echo "Container is running under docker compose"
-echo "To view logs, run: docker compose logs -f"
+echo "Container is running under Docker Compose!"
