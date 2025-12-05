@@ -1,0 +1,20 @@
+services:
+  youtubebot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: ${CONTAINER_NAME}
+
+    restart: on-failure
+
+    env_file:
+      - .env
+
+    volumes:
+      - ${LOG_DIR}/${CONTAINER_NAME}:/app/logs
+
+    ports:
+      - "9000:8000"
+
+    command: ["python", "youtubebot.py"]
