@@ -1,5 +1,4 @@
-discord.py
-pynacl
+discord.py[voice]
 yt_dlp
 python-dotenv
 ffmpeg-python
