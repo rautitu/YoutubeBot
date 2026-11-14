@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y ffmpeg
 #getting this python package as well, need it for "pkill" command that was in the original solution
 RUN apt-get update && apt-get install -y procps
 
+# Deno is the JavaScript runtime yt-dlp uses for YouTube extraction
+COPY --from=denoland/deno:bin-2.9.8 /deno /usr/local/bin/deno
+
 # Set the working directory in the container
 WORKDIR /app
 
