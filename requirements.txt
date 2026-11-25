@@ -1,5 +1,8 @@
 discord.py[voice]
-yt_dlp
+# davey 0.2 changed its key-transition API; discord.py 2.7.1 still uses the old one
+davey>=0.1.5,<0.2
+# [default] pulls in yt-dlp-ejs, needed with Deno for YouTube JS challenges
+yt_dlp[default]
 python-dotenv
 ffmpeg-python
 requests
